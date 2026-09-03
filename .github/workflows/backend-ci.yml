@@ -14,8 +14,9 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v4
 
+      # 여기를 setup-java로 수정!
       - name: Set up JDK 17
-        uses: actions/set-up-java@v4
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
