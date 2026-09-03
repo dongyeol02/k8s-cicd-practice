@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      # GHCR 패키지가 private인 경우에만 필요.
+      # kubectl create secret docker-registry ghcr-secret \
+      #   --docker-server=ghcr.io --docker-username=<github-id> --docker-password=<PAT> 로 생성
+      # imagePullSecrets:
+      #   - name: ghcr-secret
+      containers:
+        - name: backend
+          image: ghcr.io/dongyeol02/k8s-cicd-practice:latest
+          # kind 로컬 테스트 시 레지스트리 pull 대신 kind load로 올린 이미지를 그대로 사용하기 위한 옵션.
+          # 실제 클라우드 클러스터에 배포할 때는 IfNotPresent 또는 Always로 바꾸는 걸 권장.
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 15
